@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastre-se em Nossa Plataforma</title>
+</head>
+
+<body>
+    <h1>Formulário de cadastro</h1>
+    <p>Preencha os campos a baixo para prosseguir com o cadastro.<br>Campos marcados com * são obrigatórios</p>
+    <form action="#" id="formulario" onsubmit="return validarFormulario(this)">
+        <fieldset>
+            <legend>Dados pessoais</legend>
+            <label for="nome">Nome completo: *</label>
+            <input type="text" id="nome" required />
+            <label for="cpf">CPF: *</label>
+            <input inputmode="numeric" id="cpf" onkeypress="preencherCpf()" maxlength="14" required />
+            <label for="rg">RG:</label>
+            <input inputmode="numeric" id="rg" />
+            <fieldset>
+                <legend>Qual seu sexo?</legend>
+                <label for="f">Feminino</label>
+                <input type="radio" id="f" name="sexo" value="f" />
+                <label for="m">Masculino</label>
+                <input type="radio" id="m" name="sexo" value="m" />
+            </fieldset>
+        </fieldset>
+        <fieldset>
+            <legend>Endereço</legend>
+            <label for="cep">Cep: </label>
+            <input inputmode="numeric" id="cep" onchange="pegarCep()" onkeypress="preencherCep()" maxlength="9" />
+            <label for="endereco">Endereço: *</label>
+            <input type="text" id="endereco" required />
+            <label for="numero">Número: *</label>
+            <input inputmode="numeric" id="numero" required />
+            <label for="bairro">Bairro:</label>
+            <input type="text" id="bairro" />
+            <label for="cidade">Cidade:</label>
+            <input type="text" id="cidade" />
+            <label for="estado">Estado:</label>
+            <select name="estado" id="estado">
+                <option value="AC">Acre</option>
+                <option value="AL">Alagoas</option>
+                <option value="AP">Amapá</option>
+                <option value="AM">Amazonas</option>
+                <option value="BA">Bahia</option>
+                <option value="CE">Ceará</option>
+                <option value="DF">Distrito Federal</option>
+                <option value="ES">Espírito Santo</option>
+                <option value="GO">Goiás</option>
+                <option value="MA">Maranhão</option>
+                <option value="MT">Mato Grosso</option>
+                <option value="MS">Mato Grosso do Sul</option>
+                <option value="MG">Minas Gerais</option>
+                <option value="PA">Pará</option>
+                <option value="PB">Paraíba</option>
+                <option value="PR">Paraná</option>
+                <option value="PE">Pernambuco</option>
+                <option value="PI">Piauí</option>
+                <option value="RJ">Rio de Janeiro</option>
+                <option value="RN">Rio Grande do Norte</option>
+                <option value="RS">Rio Grande do Sul</option>
+                <option value="RO">Rondônia</option>
+                <option value="RR">Roraima</option>
+                <option value="SC">Santa Catarina</option>
+                <option value="SP">São Paulo</option>
+                <option value="SE">Sergipe</option>
+                <option value="TO">Tocantins</option>
+            </select>   
+        </fieldset>
+        <fieldset>
+            <legend>Informações de contato</legend>
+            <label for="telefonefixo">Telefone fixo:</label>
+            <input type="tel" id="telefonefixo" onkeypress="preencherTelefoneFixo()" maxlength="14" />
+            <label for="telefonecelular">Telefone celular: *</label>
+            <input type="tel" id="telefonecelular" onkeypress="preencherTelefoneCelular()" maxlength="15" required />
+        </fieldset>
+        <fieldset>
+            <legend>Dados de acesso da plataforma</legend>
+            <label for="email">E-mail: *</label>
+            <input type="email" id="email" required />
+            <label for="senha">Informe sua senha: *</label>
+            <input type="password" id="senha" required />
+            <label for="confirmarsenha">Confirmar senha: *</label>
+            <input type="password" id="confirmarsenha" required />
+        </fieldset>
+        <input type="submit" value="Cadastrar" />
+    </form>
+</body>
+<script>
+    var xhr = getXml();
+
+    function getXml() {
+        if(window.XMLHttpRequest) { //Caso o navegador atual suporte o objeto xmlHttpRequest
+            return new XMLHttpRequest(); //Retorna a instância do objeto
+        }
+        else if (window.ActiveXObject) { //Caso não tenha, provavelmente por ser um navegador antigo
+            return new ActiveXObject("Microsoft.XMLHTTP"); //Retorna o objeto xmlHttpRequest da Microsoft
+        }
+    }
+
+    function pegarCep() {
+        let cep = document.getElementById("cep").value;
+        
+        xhr.open('GET', 'https://viacep.com.br/ws/' + cep + '/json');
+
+        xhr.onreadystatechange = () => {
+            if(xhr.readyState == 4) {
+                if(xhr.status == 200) {
+                    let resposta = JSON.parse(xhr.responseText);
+                    document.getElementById("endereco").value = resposta.logradouro;
+                    document.getElementById("bairro").value = resposta.bairro;
+                    document.getElementById("cidade").value = resposta.localidade;
+                    document.getElementById("estado").value = resposta.uf;
+                }
+            }
+        };
+
+    xhr.send();
+    }
+
+    function validarCpf(cpfDigitado) {
+        cpfDigitado = cpfDigitado.replace(".", "");
+        cpfDigitado = cpfDigitado.replace(".", "");
+        cpfDigitado = cpfDigitado.replace("-", "");
+        if(cpfDigitado.length != 11) {
+            return false;
+        }
+
+        let numeros = cpfDigitado.substring(0, 9);
+        let digitos = cpfDigitado.substring(9, 11);
+        let soma = 0;
+
+        for(var i = 10; i > 1; i--) {
+            soma += parseInt(numeros.charAt(10 - i)) * i;
+        }
+        let resto = (soma * 10) % 11;
+        if((resto == 10) || (resto == 11)) {
+            resto = 0;
+        }
+
+        if(resto != parseInt(digitos.charAt(0))) {
+            return false;
+        }
+        soma = 0;
+        numeros += digitos.charAt(0);
+
+        for(var i = 11; i > 1; i--) {
+            soma += parseInt(numeros.charAt(11 - i)) * i;
+        }
+        resto = (soma * 10) % 11;
+        if((resto == 10) || (resto == 11)) {
+            resto = 0;
+        }
+        resto = resto.toString();
+        if(resto == digitos.charAt(1)) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    function preencherCpf() {
+        let cpf = document.getElementById("cpf").value;
+        if((cpf.length == 3) || (cpf.length == 7)) {
+            document.getElementById("cpf").value += ".";
+        }
+        else if(cpf.length == 11) {
+            document.getElementById("cpf").value += "-";
+        }
+    }
+
+    function preencherCep() {
+        let cep = document.getElementById("cep").value;
+
+        if(cep.length == 5) {
+            document.getElementById("cep").value += "-";
+        }
+    }
+
+    function preencherTelefoneFixo() {
+        let telefonefixo = document.getElementById("telefonefixo").value;
+
+        if(telefonefixo.length == 0) {
+            document.getElementById("telefonefixo").value += "(";
+        }
+        else if(telefonefixo.length == 3) {
+            document.getElementById("telefonefixo").value += ") ";
+        }
+        else if(telefonefixo.length == 9) {
+            document.getElementById("telefonefixo").value += "-";
+        }
+    }
+
+    function preencherTelefoneCelular() {
+        let telefonecelular = document.getElementById("telefonecelular").value;
+
+        if(telefonecelular.length == 0) {
+            document.getElementById("telefonecelular").value += "(";
+        }
+        else if(telefonecelular.length == 3) {
+            document.getElementById("telefonecelular").value += ") ";
+        }
+        else if(telefonecelular.length == 10) {
+            document.getElementById("telefonecelular").value += "-";
+        }
+    }
+
+    function validarFormulario(form) {
+        if(validarCpf(form.cpf.value) == false) {
+            alert("CPF inválido");
+            form.cpf.focus();
+            return false;
+        }
+
+        if(form.telefonefixo.value != "" && form.telefonefixo.value.length != 14) {
+            alert("Número inválido");
+            form.telefonefixo.focus();
+            return false;
+        }
+
+        if(form.telefonecelular.value.length != 15) {
+            alert("Número inválido");
+            form.telefonecelular.focus();
+            return false;
+        }
+
+        if(form.senha.value != form.confirmarsenha.value) {
+            alert("As senhas digitadas não são iguais");
+            form.senha.value = "";
+            form.confirmarsenha.value = "";
+            form.senha.focus();
+            return false;
+        }
+
+        if(form.cep.value != "" && form.cep.value.length != 9) {
+            alert("Cep inválido");
+            form.cep.focus();
+            return false;
+        }
+
+        let confirmacao = confirm("Deseja finalizar seu cadastro?");
+
+        if(confirmacao) {
+            alert("Olá, " + form.nome.value + "! Seu cadastro foi concluído com sucesso em nosso sistema");
+        }
+        else {
+            return false;
+    }
+    }
+</script>
+</html>
